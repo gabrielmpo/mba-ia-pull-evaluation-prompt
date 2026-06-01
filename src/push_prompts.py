@@ -19,38 +19,95 @@ from utils import load_yaml, check_env_vars, print_section_header
 
 load_dotenv()
 
+PROMPT_FILE = "prompts/bug_to_user_story_v2.yml"
+PROMPT_NAME = "bug_to_user_story_v2"
+
 
 def push_prompt_to_langsmith(prompt_name: str, prompt_data: dict) -> bool:
-    """
-    Faz push do prompt otimizado para o LangSmith Hub (PÚBLICO).
+    try:
+        client = Client()
 
-    Args:
-        prompt_name: Nome do prompt
-        prompt_data: Dados do prompt
+        username = os.getenv("USERNAME_LANGSMITH_HUB")
+        full_prompt_name = f"{username}/{prompt_name}"
 
-    Returns:
-        True se sucesso, False caso contrário
-    """
-    ...
+        client.push_prompt(
+            full_prompt_name,
+            object=prompt_data,
+            is_public=True,
+            description=(
+                "Converte relatos de bugs em User Stories utilizando "
+                "Few-Shot Learning, Role Prompting e Skeleton of Thought."
+            ),
+            tags=[
+                "prompt-engineering",
+                "few-shot-learning",
+                "role-prompting",
+                "skeleton-of-thought",
+                "user-story",
+                "bug-analysis",
+            ],
+        )
+        print(f"Prompt publicado: {full_prompt_name}")
+
+        return True
+
+    except Exception as ex:
+        print(f"Erro ao publicar prompt: {ex}")
+        return False
 
 
 def validate_prompt(prompt_data: dict) -> tuple[bool, list]:
-    """
-    Valida estrutura básica de um prompt (versão simplificada).
+    errors = []
 
-    Args:
-        prompt_data: Dados do prompt
+    if not prompt_data:
+        errors.append("Prompt vazio.")
 
-    Returns:
-        (is_valid, errors) - Tupla com status e lista de erros
-    """
-    ...
+    if "kwargs" not in prompt_data:
+        errors.append("Campo 'kwargs' não encontrado.")
 
+    kwargs = prompt_data.get("kwargs", {})
+
+    if "messages" not in kwargs:
+        errors.append("Campo 'messages' não encontrado.")
+
+    elif not kwargs["messages"]:
+        errors.append("Lista de mensagens vazia.")
+
+    return len(errors) == 0, errors
 
 def main():
-    """Função principal"""
-    ...
+    print_section_header("Push de Prompt para LangSmith")
 
+    check_env_vars(
+        [
+            "LANGCHAIN_API_KEY",
+            "USERNAME_LANGSMITH_HUB",
+        ]
+    )
+
+    prompt_path = Path(PROMPT_FILE)
+
+    if not prompt_path.exists():
+        print(f"Arquivo não encontrado: {prompt_path}")
+        return 1
+
+    prompt_data = load_yaml(prompt_path)
+
+    is_valid, errors = validate_prompt(prompt_data)
+
+    if not is_valid:
+        print("Prompt inválido:")
+
+        for error in errors:
+            print(f" - {error}")
+
+        return 1
+
+    print("Prompt validado")
+
+    success = push_prompt_to_langsmith("bug_to_user_story_v2", prompt_data)
+
+    return 0 if success else 1
 
 if __name__ == "__main__":
     sys.exit(main())
