@@ -13,7 +13,9 @@ SIMPLIFICADO: Código mais limpo e direto ao ponto.
 import os
 import sys
 from dotenv import load_dotenv
+from pathlib import Path
 from langchain import hub
+from langsmith import Client
 from langchain_core.prompts import ChatPromptTemplate
 from utils import load_yaml, check_env_vars, print_section_header
 
@@ -80,7 +82,7 @@ def main():
 
     check_env_vars(
         [
-            "LANGCHAIN_API_KEY",
+            "LANGSMITH_API_KEY",
             "USERNAME_LANGSMITH_HUB",
         ]
     )

@@ -5,11 +5,30 @@ Funções auxiliares para o projeto de otimização de prompts.
 import os
 import yaml
 import json
-from typing import Dict, Any, Optional
+from typing import Dict, Any, List, Optional
 from pathlib import Path
 from dotenv import load_dotenv
 
 load_dotenv()
+
+
+def load_jsonl(file_path: str) -> List[Dict[str, Any]]:
+    """Carrega exemplos de um arquivo JSONL (uma linha ou blocos indentados)."""
+    with open(file_path, "r", encoding="utf-8") as f:
+        content = f.read()
+
+    examples: List[Dict[str, Any]] = []
+    if "\n\n" in content:
+        for block in content.split("\n\n"):
+            block = block.strip()
+            if block:
+                examples.append(json.loads(block))
+    else:
+        for line in content.splitlines():
+            line = line.strip()
+            if line:
+                examples.append(json.loads(line))
+    return examples
 
 
 def load_yaml(file_path: str) -> Optional[Dict[str, Any]]:

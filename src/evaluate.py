@@ -26,7 +26,7 @@ from dotenv import load_dotenv
 from langsmith import Client
 from langchain import hub
 from langchain_core.prompts import ChatPromptTemplate
-from utils import check_env_vars, format_score, print_section_header, get_llm as get_configured_llm
+from utils import check_env_vars, format_score, load_jsonl, print_section_header, get_llm as get_configured_llm
 from metrics import evaluate_f1_score, evaluate_clarity, evaluate_precision
 
 load_dotenv()
@@ -37,17 +37,8 @@ def get_llm():
 
 
 def load_dataset_from_jsonl(jsonl_path: str) -> List[Dict[str, Any]]:
-    examples = []
-
     try:
-        with open(jsonl_path, 'r', encoding='utf-8') as f:
-            for line in f:
-                line = line.strip()
-                if line:  # Ignorar linhas vazias
-                    example = json.loads(line)
-                    examples.append(example)
-
-        return examples
+        return load_jsonl(jsonl_path)
 
     except FileNotFoundError:
         print(f"❌ Arquivo não encontrado: {jsonl_path}")
