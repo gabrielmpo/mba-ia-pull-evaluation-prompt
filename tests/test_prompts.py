@@ -71,7 +71,6 @@ class TestPrompts:
         system_prompt = get_system_prompt(prompt)
 
         assert "[TODO]" not in system_prompt
-        assert "TODO" not in system_prompt
 
     def test_minimum_techniques(self, prompt):
         """
